@@ -5,6 +5,7 @@ Calculate π using astronomical data from Wikipedia. FastAPI + Celery + Redis.
 ## Quick Start
 
 ```bash
+git clone https://github.com/kate-kozhych/wiki_calculation.git
 docker compose up --build
 ```
 
