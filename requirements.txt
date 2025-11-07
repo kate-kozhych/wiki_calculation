@@ -1,0 +1,18 @@
+# Web framework
+fastapi==0.104.1
+uvicorn[standard]==0.24.0
+
+# Task queue
+celery==5.3.4
+redis==5.0.1
+
+# Monitoring (optional)
+flower==2.0.1
+
+# HTTP requests
+requests==2.31.0
+
+# Validation
+pydantic==2.5.0
+
+
