@@ -73,68 +73,46 @@ class Fetcher:
             logger.warning(f"No radius found for {name}")
             return None
         if circumference is None:
-            logger.info(f"ℹCircumference not found for {name}, calculating from radius")
-            # C = 2πR
-            circumference = 2 * math.pi * radius
+            logger.info(f"ℹCircumference not found for {name}")
+            return None
 
         return {
             "name": name,
             "radius_km": radius,
             "circumference_km": circumference
+            # "source": "wikipedia"
         }
 
-    def _get_radius(self, content:str) -> Optional[float]:
-        # | equatorial_radius = {{val|6378.137|u=km}}
-        pattern1 = r'\|\s*equatorial_radius\s*=\s*{{val\|([0-9.,]+)'
-        match = re.search(pattern1, content, re.IGNORECASE)
-        
-        if match:
-            value = match.group(1).replace(',', '')
-            return float(value)
-
-        # | mean_radius = {{val|1737.4|u=km}} for the moon
-        pattern2 = r'\|\s*mean_radius\s*=\s*{{val\|([0-9.,]+)'
-        match = re.search(pattern2, content, re.IGNORECASE)
-        
-        if match:
-            value = match.group(1).replace(',', '')
-            return float(value)
-
-        # | equatorial_radius = 6378.137 km if it is in the simple format
-        pattern3 = r'\|\s*(?:equatorial_)?radius\s*=\s*([0-9.,]+)\s*km'
-        match = re.search(pattern3, content, re.IGNORECASE)
-        
-        if match:
-            value = match.group(1).replace(',', '')
-            return float(value)
-        
+    def _get_radius(self, content: str) -> Optional[float]:
+        patterns = [
+            r'\|\s*[a-z_]*radius\s*=\s*(?:\n\s*)?{{val\s*\|\s*([0-9.,]+)',
+            r'\|\s*[a-z_]*radius\s*=\s*(?:\n\s*)?{{convert\s*\|\s*([0-9.,]+)',
+            r'\|\s*[a-z_]*radius\s*=\s*(?:\n\s*)?([0-9.,]+)\s*(?:&nbsp;)?\s*km'
+        ]
+        for pattern in patterns:
+            match = re.search(pattern, content, re.IGNORECASE | re.DOTALL)
+            if match:
+                try:
+                    return float(match.group(1).replace(',', ''))
+                except ValueError:
+                    continue
         return None
 
-    def _get_circumference(self, content:str) -> Optional[float]:
-        # | circumference = {{val|40075.017|u=km}}
-        pattern1 = r'\|\s*circumference\s*=\s*{{val\|([0-9.,]+)'
-        match = re.search(pattern1, content, re.IGNORECASE)
-        
-        if match:
-            value = match.group(1).replace(',', '')
-            return float(value)
-        
-        # name | equatorial_circumference same pattern
-        pattern2 = r'\|\s*(?:equatorial_)?circumference\s*=\s*{{val\|([0-9.,]+)'
-        match = re.search(pattern2, content, re.IGNORECASE)
-        
-        if match:
-            value = match.group(1).replace(',', '')
-            return float(value)
-        
-        # | circumference = 40075.017 km (equatorial) simple format
-        pattern3 = r'\|\s*circumference\s*=\s*([0-9.,]+)\s*km'
-        match = re.search(pattern3, content, re.IGNORECASE)
-        
-        if match:
-            value = match.group(1).replace(',', '')
-            return float(value)
-        
+
+    def _get_circumference(self, content: str) -> Optional[float]:
+        patterns = [
+            r'\|\s*[a-z_]*circumference\s*=\s*(?:\n\s*)?{{val\s*\|\s*([0-9.,]+)',
+            r'\|\s*[a-z_]*circumference\s*=\s*(?:\n\s*)?{{convert\s*\|\s*([0-9.,]+)',
+            r'\|\s*[a-z_]*circumference\s*=\s*(?:\n\s*)?([0-9.,]+)\s*(?:&nbsp;)?\s*km',
+            r'\|\s*circumference\s*=\s*{{unbulleted list[^}]*\n\s*\|\s*{{val\s*\|\s*([0-9.,]+)',
+        ]  
+        for pattern in patterns:
+            match = re.search(pattern, content, re.IGNORECASE | re.DOTALL)
+            if match:
+                try:
+                    return float(match.group(1).replace(',', ''))
+                except ValueError:
+                    continue
         return None
 
 
