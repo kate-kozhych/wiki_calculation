@@ -15,7 +15,7 @@ class Fetcher:
             "User-Agent": "PiCalculatorBot/1.0 (Educational project; contact@example.com)"
         }
 
-    def fetch_cosmic_objest(self, name: str) -> Optional[Dict[str, float]]: #gets data about our space object
+    def fetch_cosmic_object(self, name: str) -> Optional[Dict[str, float]]: #gets data about our space object
         logger.info(f"Fetching data from the space for {name}")
         content = self._fetch_page_data_wiki(name)
         if not content:
@@ -137,13 +137,6 @@ class Fetcher:
         
         return None
 
-if __name__ == "__main__":
-    fetcher = Fetcher()
-    earth_data=fetcher.fetch_cosmic_objest("Earth")
-    print(f"Earth data: {earth_data}")
-    if earth_data:
-        pi = earth_data["circumference_km"] / (2 * earth_data["radius_km"])
-        print(f"Calculated π from Earth: {pi:.10f}")
-        print(f"Difference from math.pi: {abs(pi - 3.141592653589793):.10f}")
+
 
 
