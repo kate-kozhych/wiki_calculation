@@ -1,6 +1,12 @@
 # Pi Space Calculator
 
 Calculate π using astronomical data from Wikipedia. FastAPI + Celery + Redis.
+This project demonstrates how mathematical constants can be derived from real-world astronomical data.
+The backend fetches information about planets and celestial bodies (such as Earth, Saturn, and the Moon) directly from Wikipedia, extracting their radius and equatorial circumference.
+Using this data, it calculates an experimental value of π (Pi) for each object and compares it to the real mathematical constant.
+
+The computation runs asynchronously using Celery and Redis, while the FastAPI server exposes a clean REST interface to start calculations and track progress in real time.
+Users can monitor how π converges from different planetary measurements and observe calculation progress through live task updates.
 
 ## Quick Start
 
