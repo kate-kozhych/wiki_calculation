@@ -1,0 +1,95 @@
+# Pi Space Calculator
+
+Calculate π using astronomical data from Wikipedia. FastAPI + Celery + Redis.
+
+## Quick Start
+
+```bash
+docker compose up --build
+```
+
+**URLs:**
+- API: http://localhost:8000
+- Docs: http://localhost:8000/docs
+- Flower: http://localhost:5555
+
+## API
+
+### 1. Start calculation
+```bash
+GET /calculate_pi?n=3
+```
+
+Response:
+```json
+{
+  "task_id": "abc-123",
+  "status": "PENDING"
+}
+```
+
+### 2. Check progress
+```bash
+GET /check_progress?task_id=abc-123
+```
+
+Response (in progress):
+```json
+{
+  "state": "PROGRESS",
+  "progress": 0.5,
+  "status": "Fetching data for Saturn...",
+  "current_object": "Saturn",
+  "result": null
+}
+```
+
+Response (finished):
+```json
+{
+  "state": "SUCCESS",
+  "progress": 1.0,
+  "result": {
+    "pi": 3.1415926536,
+    "objects_used": 3,
+    "error_percent": 0.0,
+    "objects_data": [...]
+  }
+}
+```
+
+## Project Structure
+
+```
+├── app/
+│   ├── main.py          # FastAPI app
+│   ├── tasks.py         # Celery tasks
+│   ├── celery_app.py    # Celery config
+│   └── fetcher.py       # Wikipedia API client
+├── docker-compose.yml
+├── Dockerfile
+└── requirements.txt
+```
+
+## How it works
+
+1. Fetches radius and circumference from Wikipedia
+2. Calculates π using: `π = Circumference / (2 × Radius)`
+3. Averages results from multiple objects (Earth, Saturn, Moon)
+
+## Example
+
+```bash
+# Start calculation
+curl "http://localhost:8000/calculate_pi?n=2"
+
+# Copy task_id from response
+# Check progress
+curl "http://localhost:8000/check_progress?task_id=YOUR_TASK_ID"
+```
+
+## Stop
+
+```bash
+docker compose down -v
+```

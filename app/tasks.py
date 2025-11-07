@@ -6,15 +6,15 @@ import logging
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
+COSMIC_OBJECTS = ["Earth", "Saturn", "Moon"]
 
 @celery_app.task(bind=True, name="calculate_pi")
 def calculate_pi(self, n: int):
     self.update_state(state='PROGRESS', 
     meta={'progress': 0.0, 'status': 'Starting calculation...'})
     fetcher=Fetcher()
-    objects=["Earth","Saturn", "Moon"]
-    n = min(max(1, n), len(objects))
-    objects_to_use=objects[:n]
+    n = min(max(1, n), len(COSMIC_OBJECTS))
+    objects_to_use = COSMIC_OBJECTS[:n]
     pi_values = []
     objects_data = []
     for i, obj_name in enumerate(objects_to_use):
