@@ -2,18 +2,22 @@ from app.celery_app import celery_app
 from app.fetcher import Fetcher
 import math
 import time
+import logging
+
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 @celery_app.task(bind=True, name="calculate_pi")
 def calculate_pi(self, n: int):
     self.update_state(state='PROGRESS', 
     meta={'progress': 0.0, 'status': 'Starting calculation...'})
     fetcher=Fetcher()
-    objects=["Earth", "Saturn", "Venus", "Mars", "Jupiter", "Moon"]
+    objects=["Earth","Saturn", "Moon"]
     n = min(max(1, n), len(objects))
     objects_to_use=objects[:n]
     pi_values = []
     objects_data = []
-    for i, obj_name in enumerate(objects_to_fetch):
+    for i, obj_name in enumerate(objects_to_use):
         progress = (i + 0.5) / n
         self.update_state(state='PROGRESS', 
         meta={
@@ -34,20 +38,20 @@ def calculate_pi(self, n: int):
                         "calculated_pi": round(pi, 10),
                         "error_percent": round(abs(pi - math.pi) / math.pi * 100, 6)
                     })
-                print(f"{obj_name}: π = {pi:.10f}")
+                logger.info(f"{obj_name}: π = {pi:.10f}")    
             else:
-                print(f"Failed to fetch data for {obj_name}")
-                    objects_data.append({
-                        "name": obj_name,
-                        "error": "Failed to fetch data"
-                    })
-        except Exeption as e:
-            print(f"Error processing {obj_name}: {e}")
+                logger.error(f"Failed to fetch data for {obj_name}")
+                objects_data.append({
+                    "name": obj_name,
+                    "error": "Failed to fetch data"
+                })
+        except Exception as e:
+            logger.error(f"Error processing {obj_name}: {e}")
             objects_data.append({
                 "name": obj_name,
                 "error": str(e)
             })
-        time.sleep(0.5)
+        time.sleep(10)
         progress = (i + 1) / n
         self.update_state(
             state='PROGRESS',
@@ -64,6 +68,7 @@ def calculate_pi(self, n: int):
             "objects_used": 0,
             "objects_data": objects_data
         }
+
     average_pi = sum(pi_values) / len(pi_values)
     error_percent = abs(average_pi - math.pi) / math.pi * 100
     result = {
@@ -74,10 +79,10 @@ def calculate_pi(self, n: int):
     "error_percent": round(error_percent, 6),
     "real_pi": round(math.pi, 10)
     }
-    print(f"\nCalculation complete")
-    print(f"   Average π: {average_pi:.10f}")
-    print(f"   Objects used: {len(pi_values)}/{n}")
-    print(f"   Error: {error_percent:.6f}%")
+    logger.info(f"\nCalculation complete")
+    logger.info(f"   Average π: {average_pi:.10f}")
+    logger.info(f"   Objects used: {len(pi_values)}/{n}")
+    logger.info(f"   Error: {error_percent:.6f}%")
     
     return result
     

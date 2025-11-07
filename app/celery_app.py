@@ -1,12 +1,12 @@
 from celery import Celery
 
 celery_app = Celery(
-    "pi_calculator"
-    broker="redis://localhost:6379/0" #tasks stored
-    backend="redis://localhost:6379/0" #results stored
+    "pi_calculator",
+    broker=os.getenv("CELERY_BROKER_URL", "redis://localhost:6379/0"),
+    backend=os.getenv("CELERY_RESULT_BACKEND", "redis://localhost:6379/0"),
 )
 celery_app.conf.update(
-    tesk_serializer="json",
+    task_serializer="json",
     accept_content=["json"],
     result_serializer="json",
     timezone="UTC",

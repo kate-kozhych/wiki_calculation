@@ -80,11 +80,12 @@ class Fetcher:
             "name": name,
             "radius_km": radius,
             "circumference_km": circumference
-            # "source": "wikipedia"
         }
 
     def _get_radius(self, content: str) -> Optional[float]:
         patterns = [
+            r'\|\s*mean_radius\s*=\s*(?:\n\s*)?{{val\s*\|\s*([0-9.,]+)',
+            r'\|\s*equatorial_radius\s*=\s*(?:\n\s*)?{{val\s*\|\s*([0-9.,]+)',
             r'\|\s*[a-z_]*radius\s*=\s*(?:\n\s*)?{{val\s*\|\s*([0-9.,]+)',
             r'\|\s*[a-z_]*radius\s*=\s*(?:\n\s*)?{{convert\s*\|\s*([0-9.,]+)',
             r'\|\s*[a-z_]*radius\s*=\s*(?:\n\s*)?([0-9.,]+)\s*(?:&nbsp;)?\s*km'
@@ -93,7 +94,13 @@ class Fetcher:
             match = re.search(pattern, content, re.IGNORECASE | re.DOTALL)
             if match:
                 try:
-                    return float(match.group(1).replace(',', ''))
+                    value = float(match.group(1).replace(',', ''))
+                    if value > 100000:
+                        logger.warning(f"Radius value: {value} km (too large, probably orbital distance)")
+                        continue
+                    logger.info(f"Radius found: {value} km")
+                    return value
+
                 except ValueError:
                     continue
         return None
